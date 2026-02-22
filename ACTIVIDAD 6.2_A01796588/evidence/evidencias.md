@@ -63,40 +63,40 @@ de control de versiones con mensajes descriptivos en formato convencional:
 ![Evidencia de commits - git log --oneline](evidence_01.jpg)
 
 ```
-424eed6 refactor: fix all pylint and flake8 warnings     (2026-02-20 19:21:39)
-d4afc38 test: add comprehensive unit tests for all classes(2026-02-20 19:15:15)
-0d3d4de feat: add sample data files for testing           (2026-02-20 19:11:39)
-064c03b feat: add Hotel, Customer, and Reservation classes(2026-02-20 19:11:18)
-3af59bc chore: initialize project structure               (2026-02-20 19:09:48)
+771d831 Corregir todas las advertencias de pylint y flake8         (2026-02-22)
+a99c439 Agregar pruebas unitarias completas para todas las clases  (2026-02-22)
+8ec880c Agregar archivos de datos de ejemplo para pruebas          (2026-02-22)
+3f6300a Agregar clases Hotel, Customer y Reservation               (2026-02-22)
+501ef7e Inicializar estructura del proyecto                        (2026-02-22)
 ```
 
 **Detalle de cada commit:**
 
-1. **chore: initialize project structure**
+1. **Inicializar estructura del proyecto**
    - Creación de .gitignore para proyectos Python
    - Creación del paquete reservation_system
    - Creación del paquete tests
 
-2. **feat: add Hotel, Customer, and Reservation classes**
+2. **Agregar clases Hotel, Customer y Reservation**
    - Implementación de la clase Hotel con CRUD y gestión de habitaciones
    - Implementación de la clase Customer con CRUD
    - Implementación de la clase Reservation vinculando clientes y hoteles
    - Persistencia en archivos JSON
    - Manejo de errores para datos inválidos
 
-3. **feat: add sample data files for testing**
+3. **Agregar archivos de datos de ejemplo para pruebas**
    - Archivo hotels.json con 3 hoteles de ejemplo
    - Archivo customers.json con 3 clientes de ejemplo
    - Archivo reservations.json con 2 reservaciones de ejemplo
 
-4. **test: add comprehensive unit tests for all classes**
-   - 27 pruebas para Hotel (10 positivas, 17 negativas)
+4. **Agregar pruebas unitarias completas para todas las clases**
+   - 28 pruebas para Hotel (10 positivas, 18 negativas)
    - 19 pruebas para Customer (9 positivas, 10 negativas)
-   - 19 pruebas para Reservation (8 positivas, 11 negativas)
+   - 18 pruebas para Reservation (8 positivas, 10 negativas)
    - Total: 65 pruebas, todas pasando
-   - Cobertura de código: 98%
+   - Cobertura de código: 96%
 
-5. **refactor: fix all pylint and flake8 warnings**
+5. **Corregir todas las advertencias de pylint y flake8**
    - Extracción de lógica compartida de I/O en file_utils.py (R0801)
    - Renombrar métodos privados a públicos (W0212)
    - Uso de keyword-only args para reducir parámetros posicionales (R0917)
@@ -161,7 +161,7 @@ python -m unittest discover -v
 | test_from_dict_success | ok |
 | test_load_empty_file | ok |
 
-**TestHotelNegative (17 pruebas):**
+**TestHotelNegative (18 pruebas):**
 | Prueba | Resultado |
 |---|---|
 | test_create_hotel_duplicate_id | ok |
@@ -173,6 +173,7 @@ python -m unittest discover -v
 | test_display_hotel_not_found | ok |
 | test_modify_hotel_not_found | ok |
 | test_modify_hotel_invalid_total_rooms | ok |
+| test_modify_hotel_total_rooms_string | ok |
 | test_reserve_room_no_availability | ok |
 | test_reserve_room_hotel_not_found | ok |
 | test_cancel_reservation_all_rooms_available | ok |
@@ -194,7 +195,7 @@ python -m unittest discover -v
 | test_load_empty_file | ok |
 | test_create_multiple_reservations | ok |
 
-**TestReservationNegative (11 pruebas):**
+**TestReservationNegative (10 pruebas):**
 | Prueba | Resultado |
 |---|---|
 | test_create_reservation_nonexistent_customer | ok |
@@ -212,7 +213,7 @@ python -m unittest discover -v
 
 ---
 
-## EVIDENCIA 3 - COBERTURA DE CÓDIGO (98%)
+## EVIDENCIA 3 - COBERTURA DE CÓDIGO (96%)
 
 **Comandos ejecutados:**
 ```
@@ -220,7 +221,7 @@ python -m coverage run -m unittest discover
 python -m coverage report -m
 ```
 
-**Resultado:** 98% de cobertura total (682 sentencias, 15 sin cubrir)
+**Resultado:** 96% de cobertura total (315 sentencias, 12 sin cubrir)
 
 ![Evidencia de cobertura - coverage report con pylint y flake8](evidence_03.jpg)
 
@@ -233,13 +234,9 @@ python -m coverage report -m
 | reservation_system/file_utils.py | 22 | 3 | 86% |
 | reservation_system/hotel.py | 135 | 3 | 98% |
 | reservation_system/reservation.py | 74 | 3 | 96% |
-| tests/\_\_init\_\_.py | 0 | 0 | 100% |
-| tests/test_customer.py | 106 | 1 | 99% |
-| tests/test_hotel.py | 147 | 1 | 99% |
-| tests/test_reservation.py | 114 | 1 | 99% |
-| **TOTAL** | **682** | **15** | **98%** |
+| **TOTAL** | **315** | **12** | **96%** |
 
-> La cobertura alcanzada del **98%** supera ampliamente el mínimo requerido del 85%.
+> La cobertura alcanzada del **96%** supera ampliamente el mínimo requerido del 85%.
 
 ---
 
@@ -294,7 +291,7 @@ Pylint otorgó la calificación perfecta de 10.00/10, verificando:
 
 ## CONCLUSIÓN
 
-El desarrollo del Sistema de Reservaciones permitió aplicar de manera integral conceptos de pruebas de software y aseguramiento de la calidad. Se implementaron 65 pruebas unitarias que cubren escenarios positivos y negativos para todas las entidades del sistema, alcanzando una cobertura del 98%, superando ampliamente el mínimo requerido del 85%.
+El desarrollo del Sistema de Reservaciones permitió aplicar de manera integral conceptos de pruebas de software y aseguramiento de la calidad. Se implementaron 65 pruebas unitarias que cubren escenarios positivos y negativos para todas las entidades del sistema, alcanzando una cobertura del 96%, superando ampliamente el mínimo requerido del 85%.
 
 El análisis estático con Flake8 confirmó el cumplimiento del estándar PEP-8, mientras que Pylint otorgó una calificación perfecta de 10.00/10, validando la estructura, claridad y mantenibilidad del código. Asimismo, el uso de commits incrementales facilitó el rastreo de cambios y evidenció un proceso disciplinado de desarrollo.
 
@@ -304,9 +301,9 @@ En conjunto, la actividad demuestra la importancia de integrar pruebas automatiz
 
 | Métrica | Resultado |
 |---|---|
-| Pruebas unitarias | 65 (27 Hotel + 19 Customer + 19 Reservation) |
+| Pruebas unitarias | 65 (28 Hotel + 19 Customer + 18 Reservation) |
 | Pruebas pasando | 65/65 (100%) |
-| Cobertura | 98% (supera el 85% requerido) |
+| Cobertura | 96% (supera el 85% requerido) |
 | Flake8 | 0 errores |
 | Pylint | 10.00/10 |
 | Commits | 5 (incrementales con mensajes descriptivos) |
