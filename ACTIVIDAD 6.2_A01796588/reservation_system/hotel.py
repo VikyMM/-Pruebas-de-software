@@ -1,6 +1,7 @@
 """Module for Hotel class with persistent storage."""
-import json
 import os
+
+from reservation_system.file_utils import load_json_list, save_json_list
 
 
 class Hotel:
@@ -47,11 +48,15 @@ class Hotel:
             required = ["hotel_id", "name", "location", "total_rooms"]
             for field in required:
                 if field not in data:
-                    print(f"Error: Missing field '{field}' in hotel data.")
+                    print(
+                        f"Error: Missing field '{field}' in hotel data."
+                    )
                     return None
             if not isinstance(data["total_rooms"], int) or \
                     data["total_rooms"] < 0:
-                print("Error: 'total_rooms' must be a non-negative integer.")
+                print(
+                    "Error: 'total_rooms' must be a non-negative integer."
+                )
                 return None
             hotel = cls(
                 data["hotel_id"],
@@ -70,7 +75,7 @@ class Hotel:
             return None
 
     @staticmethod
-    def _load_all(data_file=None):
+    def load_all(data_file=None):
         """Load all hotels from the JSON file.
 
         Args:
@@ -80,24 +85,10 @@ class Hotel:
             List of hotel dictionaries.
         """
         file_path = data_file or Hotel.DATA_FILE
-        if not os.path.exists(file_path):
-            return []
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                data = json.load(file)
-                if not isinstance(data, list):
-                    print("Error: Hotel data file has invalid format.")
-                    return []
-                return data
-        except json.JSONDecodeError as exc:
-            print(f"Error reading hotel data file: {exc}")
-            return []
-        except OSError as exc:
-            print(f"Error accessing hotel data file: {exc}")
-            return []
+        return load_json_list(file_path, "hotel")
 
     @staticmethod
-    def _save_all(hotels, data_file=None):
+    def save_all(hotels, data_file=None):
         """Save all hotels to the JSON file.
 
         Args:
@@ -105,13 +96,12 @@ class Hotel:
             data_file: Optional path to the data file.
         """
         file_path = data_file or Hotel.DATA_FILE
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "w", encoding="utf-8") as file:
-            json.dump(hotels, file, indent=2)
+        save_json_list(hotels, file_path)
 
     @classmethod
-    def create_hotel(cls, hotel_id, name, location, total_rooms,
-                     data_file=None):
+    def create_hotel(  # pylint: disable=too-many-arguments
+            cls, hotel_id, name, location,
+            total_rooms, *, data_file=None):
         """Create a new hotel and save it to the data file.
 
         Args:
@@ -130,14 +120,16 @@ class Hotel:
         if not hotel_id or not name:
             print("Error: 'hotel_id' and 'name' are required.")
             return None
-        hotels = cls._load_all(data_file)
+        hotels = cls.load_all(data_file)
         for existing in hotels:
             if existing.get("hotel_id") == hotel_id:
-                print(f"Error: Hotel with ID '{hotel_id}' already exists.")
+                print(
+                    f"Error: Hotel with ID '{hotel_id}' already exists."
+                )
                 return None
         hotel = cls(hotel_id, name, location, total_rooms)
         hotels.append(hotel.to_dict())
-        cls._save_all(hotels, data_file)
+        cls.save_all(hotels, data_file)
         return hotel
 
     @classmethod
@@ -151,13 +143,13 @@ class Hotel:
         Returns:
             True if deleted, False otherwise.
         """
-        hotels = cls._load_all(data_file)
+        hotels = cls.load_all(data_file)
         original_count = len(hotels)
         hotels = [h for h in hotels if h.get("hotel_id") != hotel_id]
         if len(hotels) == original_count:
             print(f"Error: Hotel with ID '{hotel_id}' not found.")
             return False
-        cls._save_all(hotels, data_file)
+        cls.save_all(hotels, data_file)
         return True
 
     @classmethod
@@ -171,7 +163,7 @@ class Hotel:
         Returns:
             Hotel instance or None if not found.
         """
-        hotels = cls._load_all(data_file)
+        hotels = cls.load_all(data_file)
         for hotel_data in hotels:
             if hotel_data.get("hotel_id") == hotel_id:
                 hotel = cls.from_dict(hotel_data)
@@ -197,7 +189,7 @@ class Hotel:
         Returns:
             Updated Hotel instance or None if not found.
         """
-        hotels = cls._load_all(data_file)
+        hotels = cls.load_all(data_file)
         for i, hotel_data in enumerate(hotels):
             if hotel_data.get("hotel_id") == hotel_id:
                 if "name" in kwargs:
@@ -207,15 +199,21 @@ class Hotel:
                 if "total_rooms" in kwargs:
                     new_total = kwargs["total_rooms"]
                     if not isinstance(new_total, int) or new_total < 0:
-                        print("Error: 'total_rooms' must be non-negative.")
+                        print(
+                            "Error: 'total_rooms' must be non-negative."
+                        )
                         return None
                     old_total = hotels[i]["total_rooms"]
-                    old_avail = hotels[i].get("rooms_available", old_total)
+                    old_avail = hotels[i].get(
+                        "rooms_available", old_total
+                    )
                     diff = new_total - old_total
                     new_avail = max(0, old_avail + diff)
                     hotels[i]["total_rooms"] = new_total
-                    hotels[i]["rooms_available"] = min(new_avail, new_total)
-                cls._save_all(hotels, data_file)
+                    hotels[i]["rooms_available"] = min(
+                        new_avail, new_total
+                    )
+                cls.save_all(hotels, data_file)
                 return cls.from_dict(hotels[i])
         print(f"Error: Hotel with ID '{hotel_id}' not found.")
         return None
@@ -231,7 +229,7 @@ class Hotel:
         Returns:
             True if room reserved, False otherwise.
         """
-        hotels = cls._load_all(data_file)
+        hotels = cls.load_all(data_file)
         for i, hotel_data in enumerate(hotels):
             if hotel_data.get("hotel_id") == hotel_id:
                 available = hotel_data.get("rooms_available", 0)
@@ -239,14 +237,14 @@ class Hotel:
                     print("Error: No rooms available.")
                     return False
                 hotels[i]["rooms_available"] = available - 1
-                cls._save_all(hotels, data_file)
+                cls.save_all(hotels, data_file)
                 return True
         print(f"Error: Hotel with ID '{hotel_id}' not found.")
         return False
 
     @classmethod
     def cancel_reservation_room(cls, hotel_id, data_file=None):
-        """Cancel a room reservation, returning the room to available.
+        """Cancel a room reservation, returning room to available.
 
         Args:
             hotel_id: ID of the hotel.
@@ -255,7 +253,7 @@ class Hotel:
         Returns:
             True if cancellation successful, False otherwise.
         """
-        hotels = cls._load_all(data_file)
+        hotels = cls.load_all(data_file)
         for i, hotel_data in enumerate(hotels):
             if hotel_data.get("hotel_id") == hotel_id:
                 available = hotel_data.get("rooms_available", 0)
@@ -264,7 +262,7 @@ class Hotel:
                     print("Error: All rooms are already available.")
                     return False
                 hotels[i]["rooms_available"] = available + 1
-                cls._save_all(hotels, data_file)
+                cls.save_all(hotels, data_file)
                 return True
         print(f"Error: Hotel with ID '{hotel_id}' not found.")
         return False

@@ -9,15 +9,21 @@ from reservation_system.customer import Customer
 from reservation_system.reservation import Reservation
 
 
-class TestReservation(unittest.TestCase):
-    """Test cases for the Reservation class."""
+class TestReservationPositive(unittest.TestCase):
+    """Positive test cases for the Reservation class."""
 
     def setUp(self):
         """Set up temporary data files for each test."""
         self.temp_dir = tempfile.mkdtemp()
-        self.res_file = os.path.join(self.temp_dir, "reservations.json")
-        self.hotel_file = os.path.join(self.temp_dir, "hotels.json")
-        self.cust_file = os.path.join(self.temp_dir, "customers.json")
+        self.res_file = os.path.join(
+            self.temp_dir, "reservations.json"
+        )
+        self.hotel_file = os.path.join(
+            self.temp_dir, "hotels.json"
+        )
+        self.cust_file = os.path.join(
+            self.temp_dir, "customers.json"
+        )
         Hotel.create_hotel(
             "H001", "Hotel Test", "Test City", 10,
             data_file=self.hotel_file
@@ -29,13 +35,11 @@ class TestReservation(unittest.TestCase):
 
     def tearDown(self):
         """Clean up temporary files after each test."""
-        for filename in [self.res_file, self.hotel_file, self.cust_file]:
-            if os.path.exists(filename):
-                os.remove(filename)
+        for fname in [self.res_file, self.hotel_file, self.cust_file]:
+            if os.path.exists(fname):
+                os.remove(fname)
         if os.path.exists(self.temp_dir):
             os.rmdir(self.temp_dir)
-
-    # --- Positive test cases ---
 
     def test_create_reservation_success(self):
         """Test successful reservation creation."""
@@ -66,7 +70,7 @@ class TestReservation(unittest.TestCase):
         self.assertTrue(result)
 
     def test_reservation_decreases_available_rooms(self):
-        """Test that creating a reservation decreases available rooms."""
+        """Test that creating reservation decreases rooms."""
         Reservation.create_reservation(
             "R001", "C001", "H001",
             data_file=self.res_file,
@@ -79,7 +83,7 @@ class TestReservation(unittest.TestCase):
         self.assertEqual(hotel.rooms_available, 9)
 
     def test_cancel_reservation_restores_room(self):
-        """Test that cancelling a reservation restores the room."""
+        """Test that cancelling reservation restores room."""
         Reservation.create_reservation(
             "R001", "C001", "H001",
             data_file=self.res_file,
@@ -117,7 +121,7 @@ class TestReservation(unittest.TestCase):
 
     def test_load_empty_file(self):
         """Test loading when no file exists."""
-        result = Reservation._load_all(data_file=self.res_file)
+        result = Reservation.load_all(data_file=self.res_file)
         self.assertEqual(result, [])
 
     def test_create_multiple_reservations(self):
@@ -138,13 +142,46 @@ class TestReservation(unittest.TestCase):
             hotel_file=self.hotel_file,
             customer_file=self.cust_file
         )
-        reservations = Reservation._load_all(data_file=self.res_file)
+        reservations = Reservation.load_all(
+            data_file=self.res_file
+        )
         self.assertEqual(len(reservations), 2)
 
-    # --- Negative test cases ---
+
+class TestReservationNegative(unittest.TestCase):
+    """Negative test cases for the Reservation class."""
+
+    def setUp(self):
+        """Set up temporary data files for each test."""
+        self.temp_dir = tempfile.mkdtemp()
+        self.res_file = os.path.join(
+            self.temp_dir, "reservations.json"
+        )
+        self.hotel_file = os.path.join(
+            self.temp_dir, "hotels.json"
+        )
+        self.cust_file = os.path.join(
+            self.temp_dir, "customers.json"
+        )
+        Hotel.create_hotel(
+            "H001", "Hotel Test", "Test City", 10,
+            data_file=self.hotel_file
+        )
+        Customer.create_customer(
+            "C001", "Juan Perez", "juan@email.com", "555",
+            data_file=self.cust_file
+        )
+
+    def tearDown(self):
+        """Clean up temporary files after each test."""
+        for fname in [self.res_file, self.hotel_file, self.cust_file]:
+            if os.path.exists(fname):
+                os.remove(fname)
+        if os.path.exists(self.temp_dir):
+            os.rmdir(self.temp_dir)
 
     def test_create_reservation_nonexistent_customer(self):
-        """Negative: Create reservation with non-existent customer."""
+        """Negative: Reservation with non-existent customer."""
         reservation = Reservation.create_reservation(
             "R001", "NONEXISTENT", "H001",
             data_file=self.res_file,
@@ -154,7 +191,7 @@ class TestReservation(unittest.TestCase):
         self.assertIsNone(reservation)
 
     def test_create_reservation_nonexistent_hotel(self):
-        """Negative: Create reservation with non-existent hotel."""
+        """Negative: Reservation with non-existent hotel."""
         reservation = Reservation.create_reservation(
             "R001", "C001", "NONEXISTENT",
             data_file=self.res_file,
@@ -180,7 +217,7 @@ class TestReservation(unittest.TestCase):
         self.assertIsNone(duplicate)
 
     def test_create_reservation_no_rooms_available(self):
-        """Negative: Create reservation when no rooms available."""
+        """Negative: Reservation when no rooms available."""
         Hotel.create_hotel(
             "H002", "Small Hotel", "Town", 1,
             data_file=self.hotel_file
@@ -210,7 +247,7 @@ class TestReservation(unittest.TestCase):
         self.assertIsNone(reservation)
 
     def test_create_reservation_none_customer_id(self):
-        """Negative: Create reservation with None customer ID."""
+        """Negative: Reservation with None customer ID."""
         reservation = Reservation.create_reservation(
             "R001", None, "H001",
             data_file=self.res_file,
@@ -229,8 +266,11 @@ class TestReservation(unittest.TestCase):
         self.assertFalse(result)
 
     def test_from_dict_missing_field(self):
-        """Negative: Create reservation from dict with missing field."""
-        data = {"reservation_id": "R001", "customer_id": "C001"}
+        """Negative: Reservation from dict missing field."""
+        data = {
+            "reservation_id": "R001",
+            "customer_id": "C001"
+        }
         reservation = Reservation.from_dict(data)
         self.assertIsNone(reservation)
 
@@ -238,14 +278,14 @@ class TestReservation(unittest.TestCase):
         """Negative: Load from a corrupted JSON file."""
         with open(self.res_file, "w", encoding="utf-8") as file:
             file.write("not valid json{{{")
-        result = Reservation._load_all(data_file=self.res_file)
+        result = Reservation.load_all(data_file=self.res_file)
         self.assertEqual(result, [])
 
     def test_load_invalid_format_file(self):
         """Negative: Load from file with non-list JSON."""
         with open(self.res_file, "w", encoding="utf-8") as file:
             json.dump({"not": "a list"}, file)
-        result = Reservation._load_all(data_file=self.res_file)
+        result = Reservation.load_all(data_file=self.res_file)
         self.assertEqual(result, [])
 
 

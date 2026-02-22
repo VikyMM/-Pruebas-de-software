@@ -1,6 +1,7 @@
 """Module for Customer class with persistent storage."""
-import json
 import os
+
+from reservation_system.file_utils import load_json_list, save_json_list
 
 
 class Customer:
@@ -45,7 +46,10 @@ class Customer:
             required = ["customer_id", "name", "email", "phone"]
             for field in required:
                 if field not in data:
-                    print(f"Error: Missing field '{field}' in customer data.")
+                    print(
+                        f"Error: Missing field '{field}' "
+                        "in customer data."
+                    )
                     return None
             return cls(
                 data["customer_id"],
@@ -58,7 +62,7 @@ class Customer:
             return None
 
     @staticmethod
-    def _load_all(data_file=None):
+    def load_all(data_file=None):
         """Load all customers from the JSON file.
 
         Args:
@@ -68,24 +72,10 @@ class Customer:
             List of customer dictionaries.
         """
         file_path = data_file or Customer.DATA_FILE
-        if not os.path.exists(file_path):
-            return []
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                data = json.load(file)
-                if not isinstance(data, list):
-                    print("Error: Customer data file has invalid format.")
-                    return []
-                return data
-        except json.JSONDecodeError as exc:
-            print(f"Error reading customer data file: {exc}")
-            return []
-        except OSError as exc:
-            print(f"Error accessing customer data file: {exc}")
-            return []
+        return load_json_list(file_path, "customer")
 
     @staticmethod
-    def _save_all(customers, data_file=None):
+    def save_all(customers, data_file=None):
         """Save all customers to the JSON file.
 
         Args:
@@ -93,13 +83,12 @@ class Customer:
             data_file: Optional path to the data file.
         """
         file_path = data_file or Customer.DATA_FILE
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "w", encoding="utf-8") as file:
-            json.dump(customers, file, indent=2)
+        save_json_list(customers, file_path)
 
     @classmethod
-    def create_customer(cls, customer_id, name, email, phone,
-                        data_file=None):
+    def create_customer(  # pylint: disable=too-many-arguments
+            cls, customer_id, name,
+            email, phone, *, data_file=None):
         """Create a new customer and save to the data file.
 
         Args:
@@ -115,16 +104,17 @@ class Customer:
         if not customer_id or not name:
             print("Error: 'customer_id' and 'name' are required.")
             return None
-        customers = cls._load_all(data_file)
+        customers = cls.load_all(data_file)
         for existing in customers:
             if existing.get("customer_id") == customer_id:
                 print(
-                    f"Error: Customer with ID '{customer_id}' already exists."
+                    f"Error: Customer with ID "
+                    f"'{customer_id}' already exists."
                 )
                 return None
         customer = cls(customer_id, name, email, phone)
         customers.append(customer.to_dict())
-        cls._save_all(customers, data_file)
+        cls.save_all(customers, data_file)
         return customer
 
     @classmethod
@@ -138,15 +128,18 @@ class Customer:
         Returns:
             True if deleted, False otherwise.
         """
-        customers = cls._load_all(data_file)
+        customers = cls.load_all(data_file)
         original_count = len(customers)
         customers = [
-            c for c in customers if c.get("customer_id") != customer_id
+            c for c in customers
+            if c.get("customer_id") != customer_id
         ]
         if len(customers) == original_count:
-            print(f"Error: Customer with ID '{customer_id}' not found.")
+            print(
+                f"Error: Customer with ID '{customer_id}' not found."
+            )
             return False
-        cls._save_all(customers, data_file)
+        cls.save_all(customers, data_file)
         return True
 
     @classmethod
@@ -160,7 +153,7 @@ class Customer:
         Returns:
             Customer instance or None if not found.
         """
-        customers = cls._load_all(data_file)
+        customers = cls.load_all(data_file)
         for cust_data in customers:
             if cust_data.get("customer_id") == customer_id:
                 customer = cls.from_dict(cust_data)
@@ -170,11 +163,14 @@ class Customer:
                     print(f"Email: {customer.email}")
                     print(f"Phone: {customer.phone}")
                 return customer
-        print(f"Error: Customer with ID '{customer_id}' not found.")
+        print(
+            f"Error: Customer with ID '{customer_id}' not found."
+        )
         return None
 
     @classmethod
-    def modify_customer_info(cls, customer_id, data_file=None, **kwargs):
+    def modify_customer_info(cls, customer_id,
+                             data_file=None, **kwargs):
         """Modify customer information.
 
         Args:
@@ -185,7 +181,7 @@ class Customer:
         Returns:
             Updated Customer instance or None if not found.
         """
-        customers = cls._load_all(data_file)
+        customers = cls.load_all(data_file)
         for i, cust_data in enumerate(customers):
             if cust_data.get("customer_id") == customer_id:
                 if "name" in kwargs:
@@ -194,7 +190,9 @@ class Customer:
                     customers[i]["email"] = kwargs["email"]
                 if "phone" in kwargs:
                     customers[i]["phone"] = kwargs["phone"]
-                cls._save_all(customers, data_file)
+                cls.save_all(customers, data_file)
                 return cls.from_dict(customers[i])
-        print(f"Error: Customer with ID '{customer_id}' not found.")
+        print(
+            f"Error: Customer with ID '{customer_id}' not found."
+        )
         return None

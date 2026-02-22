@@ -7,8 +7,8 @@ import unittest
 from reservation_system.customer import Customer
 
 
-class TestCustomer(unittest.TestCase):
-    """Test cases for the Customer class."""
+class TestCustomerPositive(unittest.TestCase):
+    """Positive test cases for the Customer class."""
 
     def setUp(self):
         """Set up temporary data file for each test."""
@@ -21,8 +21,6 @@ class TestCustomer(unittest.TestCase):
             os.remove(self.data_file)
         if os.path.exists(self.temp_dir):
             os.rmdir(self.temp_dir)
-
-    # --- Positive test cases ---
 
     def test_create_customer_success(self):
         """Test successful customer creation."""
@@ -87,7 +85,9 @@ class TestCustomer(unittest.TestCase):
 
     def test_to_dict(self):
         """Test converting customer to dictionary."""
-        customer = Customer("C001", "Test", "test@email.com", "123")
+        customer = Customer(
+            "C001", "Test", "test@email.com", "123"
+        )
         result = customer.to_dict()
         self.assertEqual(result["customer_id"], "C001")
         self.assertEqual(result["email"], "test@email.com")
@@ -104,7 +104,7 @@ class TestCustomer(unittest.TestCase):
 
     def test_load_empty_file(self):
         """Test loading when no file exists."""
-        result = Customer._load_all(data_file=self.data_file)
+        result = Customer.load_all(data_file=self.data_file)
         self.assertEqual(result, [])
 
     def test_create_multiple_customers(self):
@@ -117,10 +117,24 @@ class TestCustomer(unittest.TestCase):
             "C002", "Maria", "maria@mail.com", "222",
             data_file=self.data_file
         )
-        customers = Customer._load_all(data_file=self.data_file)
+        customers = Customer.load_all(data_file=self.data_file)
         self.assertEqual(len(customers), 2)
 
-    # --- Negative test cases ---
+
+class TestCustomerNegative(unittest.TestCase):
+    """Negative test cases for the Customer class."""
+
+    def setUp(self):
+        """Set up temporary data file for each test."""
+        self.temp_dir = tempfile.mkdtemp()
+        self.data_file = os.path.join(self.temp_dir, "customers.json")
+
+    def tearDown(self):
+        """Clean up temporary files after each test."""
+        if os.path.exists(self.data_file):
+            os.remove(self.data_file)
+        if os.path.exists(self.temp_dir):
+            os.rmdir(self.temp_dir)
 
     def test_create_customer_duplicate_id(self):
         """Negative: Create customer with duplicate ID."""
@@ -172,7 +186,7 @@ class TestCustomer(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_from_dict_missing_field(self):
-        """Negative: Create customer from dict with missing field."""
+        """Negative: Create customer from dict missing field."""
         data = {"customer_id": "C001", "name": "Test"}
         customer = Customer.from_dict(data)
         self.assertIsNone(customer)
@@ -181,14 +195,14 @@ class TestCustomer(unittest.TestCase):
         """Negative: Load from a corrupted JSON file."""
         with open(self.data_file, "w", encoding="utf-8") as file:
             file.write("corrupted json data{{")
-        result = Customer._load_all(data_file=self.data_file)
+        result = Customer.load_all(data_file=self.data_file)
         self.assertEqual(result, [])
 
     def test_load_invalid_format_file(self):
         """Negative: Load from file with non-list JSON."""
         with open(self.data_file, "w", encoding="utf-8") as file:
             json.dump({"not": "a list"}, file)
-        result = Customer._load_all(data_file=self.data_file)
+        result = Customer.load_all(data_file=self.data_file)
         self.assertEqual(result, [])
 
     def test_create_customer_none_id(self):

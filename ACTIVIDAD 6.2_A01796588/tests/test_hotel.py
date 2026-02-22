@@ -7,8 +7,8 @@ import unittest
 from reservation_system.hotel import Hotel
 
 
-class TestHotel(unittest.TestCase):
-    """Test cases for the Hotel class."""
+class TestHotelPositive(unittest.TestCase):
+    """Positive test cases for the Hotel class."""
 
     def setUp(self):
         """Set up temporary data file for each test."""
@@ -21,8 +21,6 @@ class TestHotel(unittest.TestCase):
             os.remove(self.data_file)
         if os.path.exists(self.temp_dir):
             os.rmdir(self.temp_dir)
-
-    # --- Positive test cases ---
 
     def test_create_hotel_success(self):
         """Test successful hotel creation."""
@@ -135,10 +133,24 @@ class TestHotel(unittest.TestCase):
 
     def test_load_empty_file(self):
         """Test loading when no file exists."""
-        result = Hotel._load_all(data_file=self.data_file)
+        result = Hotel.load_all(data_file=self.data_file)
         self.assertEqual(result, [])
 
-    # --- Negative test cases ---
+
+class TestHotelNegative(unittest.TestCase):
+    """Negative test cases for the Hotel class."""
+
+    def setUp(self):
+        """Set up temporary data file for each test."""
+        self.temp_dir = tempfile.mkdtemp()
+        self.data_file = os.path.join(self.temp_dir, "hotels.json")
+
+    def tearDown(self):
+        """Clean up temporary files after each test."""
+        if os.path.exists(self.data_file):
+            os.remove(self.data_file)
+        if os.path.exists(self.temp_dir):
+            os.rmdir(self.temp_dir)
 
     def test_create_hotel_duplicate_id(self):
         """Negative: Create hotel with duplicate ID."""
@@ -234,7 +246,7 @@ class TestHotel(unittest.TestCase):
         self.assertFalse(result)
 
     def test_cancel_reservation_all_rooms_available(self):
-        """Negative: Cancel reservation when all rooms available."""
+        """Negative: Cancel when all rooms available."""
         Hotel.create_hotel(
             "H001", "Hotel Test", "Test City", 5,
             data_file=self.data_file
@@ -245,7 +257,7 @@ class TestHotel(unittest.TestCase):
         self.assertFalse(result)
 
     def test_cancel_reservation_hotel_not_found(self):
-        """Negative: Cancel reservation for non-existent hotel."""
+        """Negative: Cancel for non-existent hotel."""
         result = Hotel.cancel_reservation_room(
             "NONEXISTENT", data_file=self.data_file
         )
@@ -270,14 +282,14 @@ class TestHotel(unittest.TestCase):
         """Negative: Load from a corrupted JSON file."""
         with open(self.data_file, "w", encoding="utf-8") as file:
             file.write("not valid json{{{")
-        result = Hotel._load_all(data_file=self.data_file)
+        result = Hotel.load_all(data_file=self.data_file)
         self.assertEqual(result, [])
 
     def test_load_invalid_format_file(self):
         """Negative: Load from file with non-list JSON."""
         with open(self.data_file, "w", encoding="utf-8") as file:
             json.dump({"key": "value"}, file)
-        result = Hotel._load_all(data_file=self.data_file)
+        result = Hotel.load_all(data_file=self.data_file)
         self.assertEqual(result, [])
 
     def test_modify_hotel_total_rooms_string(self):

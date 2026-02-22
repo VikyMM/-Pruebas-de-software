@@ -1,9 +1,9 @@
 """Module for Reservation class with persistent storage."""
-import json
 import os
 
 from reservation_system.hotel import Hotel
 from reservation_system.customer import Customer
+from reservation_system.file_utils import load_json_list, save_json_list
 
 
 class Reservation:
@@ -60,7 +60,7 @@ class Reservation:
             return None
 
     @staticmethod
-    def _load_all(data_file=None):
+    def load_all(data_file=None):
         """Load all reservations from the JSON file.
 
         Args:
@@ -70,26 +70,10 @@ class Reservation:
             List of reservation dictionaries.
         """
         file_path = data_file or Reservation.DATA_FILE
-        if not os.path.exists(file_path):
-            return []
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                data = json.load(file)
-                if not isinstance(data, list):
-                    print(
-                        "Error: Reservation data file has invalid format."
-                    )
-                    return []
-                return data
-        except json.JSONDecodeError as exc:
-            print(f"Error reading reservation data file: {exc}")
-            return []
-        except OSError as exc:
-            print(f"Error accessing reservation data file: {exc}")
-            return []
+        return load_json_list(file_path, "reservation")
 
     @staticmethod
-    def _save_all(reservations, data_file=None):
+    def save_all(reservations, data_file=None):
         """Save all reservations to the JSON file.
 
         Args:
@@ -97,14 +81,13 @@ class Reservation:
             data_file: Optional path to the data file.
         """
         file_path = data_file or Reservation.DATA_FILE
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "w", encoding="utf-8") as file:
-            json.dump(reservations, file, indent=2)
+        save_json_list(reservations, file_path)
 
     @classmethod
-    def create_reservation(cls, reservation_id, customer_id, hotel_id,
-                           data_file=None, hotel_file=None,
-                           customer_file=None):
+    def create_reservation(  # pylint: disable=too-many-arguments
+            cls, reservation_id, customer_id,
+            hotel_id, *, data_file=None,
+            hotel_file=None, customer_file=None):
         """Create a new reservation.
 
         Validates that the customer and hotel exist, and that a room
@@ -125,15 +108,17 @@ class Reservation:
             print("Error: All IDs are required for a reservation.")
             return None
 
-        customers = Customer._load_all(customer_file)
+        customers = Customer.load_all(customer_file)
         customer_exists = any(
             c.get("customer_id") == customer_id for c in customers
         )
         if not customer_exists:
-            print(f"Error: Customer with ID '{customer_id}' not found.")
+            print(
+                f"Error: Customer with ID '{customer_id}' not found."
+            )
             return None
 
-        hotels = Hotel._load_all(hotel_file)
+        hotels = Hotel.load_all(hotel_file)
         hotel_exists = any(
             h.get("hotel_id") == hotel_id for h in hotels
         )
@@ -141,7 +126,7 @@ class Reservation:
             print(f"Error: Hotel with ID '{hotel_id}' not found.")
             return None
 
-        reservations = cls._load_all(data_file)
+        reservations = cls.load_all(data_file)
         for existing in reservations:
             if existing.get("reservation_id") == reservation_id:
                 print(
@@ -155,7 +140,7 @@ class Reservation:
 
         reservation = cls(reservation_id, customer_id, hotel_id)
         reservations.append(reservation.to_dict())
-        cls._save_all(reservations, data_file)
+        cls.save_all(reservations, data_file)
         return reservation
 
     @classmethod
@@ -173,7 +158,7 @@ class Reservation:
         Returns:
             True if cancelled, False otherwise.
         """
-        reservations = cls._load_all(data_file)
+        reservations = cls.load_all(data_file)
         reservation_data = None
         for res in reservations:
             if res.get("reservation_id") == reservation_id:
@@ -194,5 +179,5 @@ class Reservation:
             r for r in reservations
             if r.get("reservation_id") != reservation_id
         ]
-        cls._save_all(reservations, data_file)
+        cls.save_all(reservations, data_file)
         return True
