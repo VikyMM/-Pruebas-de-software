@@ -1,0 +1,23 @@
+[
+  {
+    "hotel_id": "H001",
+    "name": "Hotel Plaza",
+    "location": "Ciudad de Mexico",
+    "total_rooms": 50,
+    "rooms_available": 50
+  },
+  {
+    "hotel_id": "H002",
+    "name": "Hotel Continental",
+    "location": "Monterrey",
+    "total_rooms": 30,
+    "rooms_available": 28
+  },
+  {
+    "hotel_id": "H003",
+    "name": "Hotel Reforma",
+    "location": "Guadalajara",
+    "total_rooms": 20,
+    "rooms_available": 20
+  }
+]
